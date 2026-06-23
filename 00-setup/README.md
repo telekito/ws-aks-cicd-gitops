@@ -6,7 +6,7 @@ Este módulo contiene todo lo necesario para preparar tu máquina y desplegar la
 
 ```text
 00-setup/
-├── README.md (guía unificada)
+├── README.md
 ├── install-prerequisites.ps1
 ├── verify-docker-wsl.ps1
 ├── deploy-infrastructure.ps1
