@@ -37,7 +37,27 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 - kubectl conectado a AKS y namespace aks-workshop creado
 - Tener un ACR creado y credenciales disponibles
 - Tener acceso a un Azure DevOps Project
-- El código estar en un repositorio con el `azure-pipelines.yml` en la raíz
+- Tener el código en un repositorio con `azure-pipelines.yml` en la raíz y la app en `workshop-app/`
+
+**Estructura mínima esperada del repositorio:**
+
+```text
+<repo-root>/
+├── azure-pipelines.yml
+└── workshop-app/
+   ├── Dockerfile
+   └── k8s/
+      ├── namespace.yaml
+      ├── configmap.yaml
+      ├── deployment.yaml
+      └── service.yaml
+```
+
+**Validación rápida (antes de ejecutar pipeline):**
+- En la raíz del repo debe existir `azure-pipelines.yml`.
+- En `workshop-app/` debe existir `Dockerfile`.
+- En `workshop-app/k8s/` deben existir los manifests de Kubernetes.
+- La rama principal del repositorio debe ser `main` (o ajustar el trigger del pipeline).
 
 ### Pasos
 
