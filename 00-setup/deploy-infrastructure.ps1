@@ -206,7 +206,96 @@ if ($LASTEXITCODE -ne 0) {
   }
 }
 
-# Resumen final
+# Construir y subir imagen al ACR
+Write-Host ""
+Write-Host "================================================"
+Write-Host "Construyendo y subiendo imagen al ACR"
+Write-Host "================================================"
+Write-Host ""
+
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+  Write-Host "⚠️  Docker no está disponible. Saltando construcción de imagen." -ForegroundColor Yellow
+  Write-Host "   Para construir la imagen manualmente, ejecuta:"
+  Write-Host "   cd ../workshop-app"
+  Write-Host "   docker build -t $AcrName.azurecr.io/workshop-app:latest ."
+  Write-Host "   docker push $AcrName.azurecr.io/workshop-app:latest"
+}
+else {
+  Write-Host "✅ Docker disponible"
+  
+  # Obtener credenciales ACR
+  Write-Host ""
+  Write-Host "Obteniendo credenciales del ACR..."
+  $acrInfo = az acr show --resource-group $ResourceGroup --name $AcrName --output json 2>$null | ConvertFrom-Json
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "⚠️  No se pudo obtener información del ACR" -ForegroundColor Yellow
+  }
+  else {
+    $acrLoginServer = $acrInfo.loginServer
+    Write-Host "✅ Servidor de login: $acrLoginServer"
+    
+    # Login a ACR
+    Write-Host ""
+    Write-Host "Autenticando Docker con ACR..."
+    az acr login --name $AcrName
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "⚠️  Error autenticando con ACR" -ForegroundColor Yellow
+    }
+    else {
+      Write-Host "✅ Autenticación exitosa"
+      
+      # Construir imagen
+      Write-Host ""
+      Write-Host "Construyendo imagen Docker..."
+      $appPath = "..\workshop-app"
+      if (Test-Path $appPath) {
+        docker build -t "$acrLoginServer/workshop-app:latest" $appPath
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "❌ Error construyendo imagen" -ForegroundColor Red
+        }
+        else {
+          Write-Host "✅ Imagen construida exitosamente"
+          
+          # Subir imagen
+          Write-Host ""
+          Write-Host "Subiendo imagen al ACR..."
+          docker push "$acrLoginServer/workshop-app:latest"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "⚠️  Error subiendo imagen" -ForegroundColor Yellow
+          }
+          else {
+            Write-Host "✅ Imagen subida exitosamente"
+          }
+        }
+      }
+      else {
+        Write-Host "⚠️  Directorio workshop-app no encontrado: $appPath" -ForegroundColor Yellow
+      }
+    }
+  }
+  
+  # Asignar permisos acrpull al usuario actual
+  Write-Host ""
+  Write-Host "Configurando permisos del ACR..."
+  $currentUser = az account show --output json 2>$null | ConvertFrom-Json
+  if ($LASTEXITCODE -eq 0 -and $currentUser.user.name) {
+    $userId = az ad user show --id $currentUser.user.name --output json 2>$null | ConvertFrom-Json
+    if ($LASTEXITCODE -eq 0 -and $userId.id) {
+      Write-Host "Asignando rol AcrPull a $($currentUser.user.name)..."
+      az role assignment create `
+        --assignee $userId.id `
+        --role AcrPull `
+        --scope "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ContainerRegistry/registries/$AcrName" `
+        --output none 2>$null
+      if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Permisos AcrPull asignados"
+      }
+      else {
+        Write-Host "⚠️  Permisos AcrPull ya asignados o error" -ForegroundColor Yellow
+      }
+    }
+  }
+}
 Write-Host ""
 Write-Host "================================================"
 Write-Host "✅ Despliegue completado"
