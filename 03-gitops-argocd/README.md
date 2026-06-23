@@ -27,21 +27,26 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
    ```powershell
    .\scripts\install-argocd.ps1 -Namespace argocd
    ```
-   **Validación esperada**: deployment/argocd-server available, pods en estado Running.
+   **Validación esperada**: deployment/argocd-server available, pods en estado Running, service con IP pública asignada.
 
-2. **Obtener credenciales de acceso**
+2. **Obtener la IP pública y credenciales de acceso**
    ```powershell
+   # Obtener IP pública
+   kubectl get svc argocd-server -n argocd -o wide
+   
+   # Obtener contraseña admin
    .\scripts\get-argocd-access.ps1
    ```
-   **Validación esperada**: muestra contraseña admin y comando de port-forward.
+   **Validación esperada**: 
+   - Service muestra `EXTERNAL-IP` (puede tardar unos segundos en asignarse)
+   - Script muestra la contraseña admin
 
 3. **Acceder a la UI de Argo CD**
-   ```powershell
-   kubectl port-forward svc/argocd-server -n argocd 8080:443
-   # Abre en navegador: https://localhost:8080
-   # Login: admin / <password>
-   ```
-   **Validación esperada**: dashboard de Argo CD sin errores, lista vacía de Applications.
+   - Abre en navegador: `https://<EXTERNAL-IP>:443` (reemplaza `<EXTERNAL-IP>` con el valor del paso anterior)
+   - O si prefieres port-forward local: `kubectl port-forward svc/argocd-server -n argocd 8080:443` → `https://localhost:8080`
+   - Login: `admin` / `<password>` (obtenida en paso anterior)
+   
+   **Validación esperada**: dashboard de Argo CD sin errores, lista vacía de Applications, conexión HTTPS válida.
 
 4. **Configurar el repositorio Git en Argo CD**
    - En UI: Settings > Repositories > Connect Repo

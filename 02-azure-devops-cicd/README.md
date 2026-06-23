@@ -45,11 +45,6 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    ├── src/
    │  └── server.js
    ├── Dockerfile
-   └── k8s/
-      ├── namespace.yaml
-      ├── configmap.yaml
-      ├── deployment.yaml
-      └── service.yaml
    └── k8s-pipeline/
       ├── namespace.yaml
       ├── configmap.yaml
