@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKS Workshop App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        
+        .info-box {
+            background: #f5f7ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .deployment-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #999;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AKS Workshop App</h1>
+            <p class="subtitle">Aplicación Demo para Kubernetes en Azure</p>
+            <div class="status-badge">✓ En ejecución</div>
+        </div>
+        
+        <div class="info-box">
+            <h3>📊 Información del Pod</h3>
+            <div class="info-row">
+                <span class="label">Pod Name:</span>
+                <span class="value" id="hostname">Cargando...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Aplicación:</span>
+                <span class="value" id="appName">Cargando...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Ambiente:</span>
+                <span class="value" id="environment">Cargando...</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Hora Actual:</span>
+                <span class="value" id="timestamp">Cargando...</span>
+            </div>
+        </div>
+        
+        <div class="deployment-info">
+            <strong>💡 Tip:</strong> Edita el archivo <code>src/index.html</code> para personalizar esta página, 
+            reconstruye la imagen y verás los cambios automáticamente.
+        </div>
+        
+        <div class="footer">
+            <p>AKS Workshop | GitOps & CI/CD Demo</p>
+        </div>
+    </div>
+    
+    <script>
+        async function loadInfo() {
+            try {
+                const response = await fetch('/api/info');
+                const data = await response.json();
+                
+                document.getElementById('hostname').textContent = data.pod || 'N/A';
+                document.getElementById('appName').textContent = data.app || 'N/A';
+                document.getElementById('environment').textContent = data.environment || 'N/A';
+                document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString('es-ES');
+            } catch (error) {
+                console.error('Error loading info:', error);
+                document.getElementById('hostname').textContent = 'Error al cargar';
+            }
+        }
+        
+        loadInfo();
+        setInterval(loadInfo, 5000); // Actualizar cada 5 segundos
+    </script>
+</body>
+</html>

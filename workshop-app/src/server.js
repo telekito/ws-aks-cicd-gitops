@@ -1,4 +1,6 @@
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const port = process.env.PORT || 3000;
 const appName = process.env.APP_NAME || 'aks-workshop-app';
@@ -13,6 +15,21 @@ function jsonResponse(res, statusCode, payload) {
   res.end(body);
 }
 
+function htmlResponse(res, statusCode, content) {
+  res.writeHead(statusCode, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Content-Length': Buffer.byteLength(content),
+  });
+  res.end(content);
+}
+
+let indexHtml = '';
+try {
+  indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+} catch (err) {
+  console.warn('Could not load index.html:', err.message);
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === '/healthz') {
     jsonResponse(res, 200, { status: 'ok' });
@@ -21,6 +38,30 @@ const server = http.createServer((req, res) => {
 
   if (req.url === '/readyz') {
     jsonResponse(res, 200, { status: 'ready' });
+    return;
+  }
+
+  if (req.url === '/api/info') {
+    jsonResponse(res, 200, {
+      app: appName,
+      environment,
+      pod: process.env.HOSTNAME || 'local',
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  if (req.url === '/' || req.url === '') {
+    if (indexHtml) {
+      htmlResponse(res, 200, indexHtml);
+    } else {
+      jsonResponse(res, 200, {
+        app: appName,
+        environment,
+        pod: process.env.HOSTNAME || 'local',
+        timestamp: new Date().toISOString(),
+      });
+    }
     return;
   }
 

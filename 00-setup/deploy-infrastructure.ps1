@@ -150,6 +150,68 @@ if ($LASTEXITCODE -ne 0) {
   Write-Host "✅ ACR creado: $AcrName.azurecr.io"
 }
 
+# Asignar permisos del ACR al usuario autenticado cuanto antes para dar tiempo de propagación
+Write-Host ""
+Write-Host "Configurando permisos del ACR..."
+$acrExists = az acr show --resource-group $ResourceGroup --name $AcrName --output none 2>$null
+if ($LASTEXITCODE -eq 0) {
+  $currentUser = az account show --output json 2>$null | ConvertFrom-Json
+  if ($LASTEXITCODE -eq 0 -and $currentUser.user.name) {
+    $acrScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ContainerRegistry/registries/$AcrName"
+    $assigneeObjectId = $null
+    $assigneePrincipalType = $null
+
+    # Intento 1: usuario autenticado (funciona mejor con cuentas de usuario)
+    $signedInUserObjectId = az ad signed-in-user show --query id --output tsv 2>$null
+    if ($LASTEXITCODE -eq 0 -and $signedInUserObjectId) {
+      $assigneeObjectId = $signedInUserObjectId
+      $assigneePrincipalType = 'User'
+    }
+    elseif ($currentUser.user.type -eq 'servicePrincipal') {
+      # Intento 2: sesión con Service Principal
+      $spObjectId = az ad sp show --id $currentUser.user.name --query id --output tsv 2>$null
+      if ($LASTEXITCODE -eq 0 -and $spObjectId) {
+        $assigneeObjectId = $spObjectId
+        $assigneePrincipalType = 'ServicePrincipal'
+      }
+    }
+
+    foreach ($role in @('AcrPull', 'AcrPush')) {
+      Write-Host "Asignando rol $role a $($currentUser.user.name)..."
+
+      if ($assigneeObjectId) {
+        az role assignment create `
+          --assignee-object-id $assigneeObjectId `
+          --assignee-principal-type $assigneePrincipalType `
+          --role $role `
+          --scope $acrScope `
+          --output none 2>$null
+      }
+      else {
+        # Fallback: delegar resolución al servicio RBAC con UPN/SPN
+        az role assignment create `
+          --assignee $($currentUser.user.name) `
+          --role $role `
+          --scope $acrScope `
+          --output none 2>$null
+      }
+
+      if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Permiso $role asignado"
+      }
+      else {
+        Write-Host "⚠️  Permiso $role ya asignado o no se pudo asignar" -ForegroundColor Yellow
+      }
+    }
+  }
+  else {
+    Write-Host "⚠️  No se pudo obtener el usuario autenticado para asignar permisos ACR" -ForegroundColor Yellow
+  }
+}
+else {
+  Write-Host "⚠️  No se pudo validar el ACR. Se omite asignación de permisos por ahora" -ForegroundColor Yellow
+}
+
 # Crear AKS
 Write-Host ""
 Write-Host "Creando clúster AKS (esto puede tomar 5-10 minutos)..."
@@ -222,36 +284,6 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 }
 else {
   Write-Host "✅ Docker disponible"
-
-  # Asignar permisos ACR al usuario actual (antes del login/push)
-  Write-Host ""
-  Write-Host "Configurando permisos del ACR..."
-  $currentUser = az account show --output json 2>$null | ConvertFrom-Json
-  if ($LASTEXITCODE -eq 0 -and $currentUser.user.name) {
-    $userId = az ad user show --id $currentUser.user.name --output json 2>$null | ConvertFrom-Json
-    if ($LASTEXITCODE -eq 0 -and $userId.id) {
-      foreach ($role in @('AcrPull', 'AcrPush')) {
-        Write-Host "Asignando rol $role a $($currentUser.user.name)..."
-        az role assignment create `
-          --assignee $userId.id `
-          --role $role `
-          --scope "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ContainerRegistry/registries/$AcrName" `
-          --output none 2>$null
-        if ($LASTEXITCODE -eq 0) {
-          Write-Host "✅ Permiso $role asignado"
-        }
-        else {
-          Write-Host "⚠️  Permiso $role ya asignado o no se pudo asignar" -ForegroundColor Yellow
-        }
-      }
-    }
-    else {
-      Write-Host "⚠️  No se pudo resolver el usuario en Azure AD para asignar permisos ACR" -ForegroundColor Yellow
-    }
-  }
-  else {
-    Write-Host "⚠️  No se pudo obtener el usuario autenticado para asignar permisos ACR" -ForegroundColor Yellow
-  }
   
   # Obtener credenciales ACR
   Write-Host ""
