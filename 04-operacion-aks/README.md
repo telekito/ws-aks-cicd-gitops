@@ -16,7 +16,7 @@ Aprender a operar y diagnosticar una aplicación ya desplegada en AKS.
 ## Laboratorio paso a paso
 
 ### Prerequisitos
-- Tener módulo 3 o 4 completado (app desplegada)
+- Tener módulo 2 o 3 completado (app desplegada)
 - kubectl conectado al AKS
 - Acceso al namespace aks-workshop
 

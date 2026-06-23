@@ -17,7 +17,7 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 ## Laboratorio paso a paso
 
 ### Prerequisitos
-- Tener módulo 3 completado (app desplegada con CI/CD)
+- Tener módulo 2 completado (app desplegada con CI/CD)
 - Acceso a un repositorio Git con permisos de lectura
 - El contenido de `workshop-app/k8s/` debe estar en ese repositorio bajo la misma estructura
 

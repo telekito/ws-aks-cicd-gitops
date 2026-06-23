@@ -20,8 +20,8 @@ Antes de comenzar, asegurate de que tienes:
 - **PowerShell**: versión 5.1 o superior (Core recomendado)
 - **Clúster AKS**: ya existe o hay permisos para crearlo
 - **ACR**: un registro de contenedores de Azure ya existe o hay permisos para crearlo
-- **Azure DevOps**: con acceso a un proyecto (para el módulo 3)
-- **Git**: acceso a un repositorio para GitOps (módulo 4)
+- **Azure DevOps**: con acceso a un proyecto (para el módulo 2)
+- **Git**: acceso a un repositorio para GitOps (módulo 3)
 
 ## Estructura
 

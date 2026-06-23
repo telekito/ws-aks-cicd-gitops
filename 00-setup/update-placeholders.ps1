@@ -46,14 +46,12 @@ Write-Host ""
 # Archivos a procesar
 $filesToProcess = @(
   '..\01-kubernetes-essentials\README.md'
-  '..\02-aks-base\README.md'
-  '..\02-aks-base\scripts\connect-aks.ps1'
-  '..\03-azure-devops-cicd\README.md'
-  '..\03-azure-devops-cicd\scripts\deploy-to-aks.ps1'
-  '..\03-azure-devops-cicd\azure-pipelines.yml'
-  '..\04-gitops-argocd\README.md'
-  '..\04-gitops-argocd\manifests\application.yaml'
-  '..\05-operacion-aks\README.md'
+  '..\02-azure-devops-cicd\README.md'
+  '..\02-azure-devops-cicd\scripts\deploy-to-aks.ps1'
+  '..\02-azure-devops-cicd\azure-pipelines.yml'
+  '..\03-gitops-argocd\README.md'
+  '..\03-gitops-argocd\manifests\application.yaml'
+  '..\04-operacion-aks\README.md'
   '..\workshop-app\k8s\deployment.yaml'
   '..\workshop-app\k8s\ingress.yaml'
 )
