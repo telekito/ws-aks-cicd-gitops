@@ -158,7 +158,8 @@ az aks create `
   --load-balancer-sku standard `
   --enable-managed-identity `
   --network-plugin azure `
-  --enable-addons monitoring,http_application_routing `
+  --enable-addons monitoring `
+  --enable-app-routing `
   --node-vm-size $VmSize `
   --attach-acr $AcrName `
   --output none
