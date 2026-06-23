@@ -10,16 +10,17 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 - Arquitectura Git -> Argo CD -> AKS.
 
 ## Scripts y archivos
-- `scripts/install-argocd.ps1`: instala Argo CD en el clúster.
-- `scripts/get-argocd-access.ps1`: obtiene el acceso inicial a la UI.
+- `scripts/install-argocd.ps1`: instala Argo CD en el clúster y expone IP pública.
+- `scripts/get-argocd-access.ps1`: obtiene credenciales y URL de acceso.
+- `scripts/deploy-gitops-app.ps1`: crea la Application y espera estado Synced/Healthy.
 - `manifests/application.yaml`: definición GitOps de la aplicación.
 
 ## Laboratorio paso a paso
 
 ### Prerequisitos
 - Tener módulo 2 completado (app desplegada con CI/CD)
-- Acceso a un repositorio Git con permisos de lectura
-- El contenido de `workshop-app/k8s-argo/` debe estar en ese repositorio bajo la misma estructura
+- Acceso a un repositorio Git dedicado para GitOps (separado de este repo)
+- Ese repo GitOps debe contener la carpeta `k8s-argo/` en la raíz
 
 ### Pasos
 
@@ -27,68 +28,51 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
    ```powershell
    .\scripts\install-argocd.ps1 -Namespace argocd
    ```
-   **Validación esperada**: deployment/argocd-server available, pods en estado Running, service con IP pública asignada.
+   **Validación esperada**: deployment/argocd-server disponible, service con IP pública.
 
-2. **Obtener la IP pública y credenciales de acceso**
+2. **Obtener IP pública y credenciales de acceso**
    ```powershell
-   # Obtener IP pública
-   kubectl get svc argocd-server -n argocd -o wide
-   
-   # Obtener contraseña admin
-   .\scripts\get-argocd-access.ps1
+   .\scripts\get-argocd-access.ps1 -Namespace argocd
    ```
-   **Validación esperada**: 
-   - Service muestra `EXTERNAL-IP` (puede tardar unos segundos en asignarse)
-   - Script muestra la contraseña admin
+   **Validación esperada**:
+   - Muestra `Usuario`, `Password` y `URL pública` (si ya fue asignada)
+   - Si no hay IP aún, muestra comando de port-forward temporal
 
 3. **Acceder a la UI de Argo CD**
-   - Abre en navegador: `https://<EXTERNAL-IP>:443` (reemplaza `<EXTERNAL-IP>` con el valor del paso anterior)
-   - O si prefieres port-forward local: `kubectl port-forward svc/argocd-server -n argocd 8080:443` → `https://localhost:8080`
-   - Login: `admin` / `<password>` (obtenida en paso anterior)
+   - Abre en navegador: `https://<EXTERNAL-IP>`
+   - Login: `admin` / `<password>`
    
-   **Validación esperada**: dashboard de Argo CD sin errores, lista vacía de Applications, conexión HTTPS válida.
+   **Validación esperada**: dashboard de Argo CD sin errores.
 
-4. **Configurar el repositorio Git en Argo CD**
+4. **Configurar el repositorio Git dedicado en Argo CD**
    - En UI: Settings > Repositories > Connect Repo
    - Type: Git
    - Repository URL: `<GIT_REPOSITORY_URL>`
    - Si es privado, añade credenciales
 
-5. **Revisar el manifiesto de Application**
-   - Abre `manifests/application.yaml`
-   - Reemplaza `<GIT_REPOSITORY_URL>` con la URL real del repo
-   - Nota: ya apunta a `workshop-app/k8s-argo` como path
-
-6. **Crear la Application en Argo CD**
+5. **Desplegar la Application con script**
    ```powershell
-   kubectl apply -f .\manifests\application.yaml
+   .\scripts\deploy-gitops-app.ps1 -GitRepositoryUrl "<GIT_REPOSITORY_URL>"
    ```
-   **Validación esperada**: application.argoproj.io/workshop-app created.
+   **Validación esperada**: Application creada y en estado `Synced` / `Healthy`.
 
-7. **Verificar que Argo CD sincroniza**
-   ```powershell
-   kubectl get application -n argocd
-   kubectl describe application workshop-app -n argocd
-   ```
-   **Validación esperada**: Application en estado Synced, Health Healthy.
-
-8. **Ver la app sincronizada en el namespace**
+6. **Ver la app sincronizada en el namespace de Argo**
    ```powershell
    kubectl get all -n aks-workshop-argo
    ```
-   **Validación esperada**: Deployment y pods están, igual que con CI/CD pero gestionados por Argo CD.
+   **Validación esperada**: Deployment y pods en Running.
 
-9. **Demostración de GitOps: cambiar algo en Git y ver sync automático**
-   - Modifica un valor en `workshop-app/k8s-argo/configmap.yaml` (ej: ENVIRONMENT)
-   - Haz commit y push
-   - Vuelve a la UI de Argo CD y observa sync automático (unos 3-5 seg)
-   - O ejecuta `kubectl apply -f ./manifests/application.yaml --force-sync`
+7. **Demostración GitOps (sin tocar este repo de workshop)**
+   - Modifica un valor en `k8s-argo/configmap.yaml` del repo GitOps dedicado (ej: ENVIRONMENT)
+   - Haz commit y push en el repo GitOps
+   - Observa en Argo CD la sincronización automática
 
 ### Errores típicos
 
-- **Error: Argo CD no se instala**: verifica que la URL del manifest es correcta y hay acceso a internet.
-- **Error: Application no sincroniza**: revisa que la URL del repo y path son correctos con `kubectl describe application`.
-- **Error: Password no funciona**: borra el namespace y reinstala con `kubectl delete namespace argocd`.
+- **Error: Argo CD no se instala**: verifica acceso a internet para descargar el manifest oficial.
+- **Error: no hay IP pública**: espera unos minutos y ejecuta `kubectl get svc argocd-server -n argocd -w`.
+- **Error: Application no sincroniza**: revisa URL del repo GitOps y path `k8s-argo` en `kubectl describe application workshop-app -n argocd`.
+- **Error: no detecta cambios**: confirma que hiciste commit/push en el repo GitOps (no en este repo).
 
 ## Resultado esperado
-La aplicación queda gestionada de forma declarativa y los cambios en Git se reflejan en el clúster sin intervención manual.
+La aplicación queda gestionada de forma declarativa desde un repositorio GitOps dedicado, sin ensuciar el repositorio del workshop.

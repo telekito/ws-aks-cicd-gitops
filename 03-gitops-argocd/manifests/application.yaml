@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: <GIT_REPOSITORY_URL>
     targetRevision: main
-    path: workshop-app/k8s-argo
+    path: k8s-argo
   destination:
     server: https://kubernetes.default.svc
     namespace: aks-workshop-argo
@@ -18,3 +18,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
