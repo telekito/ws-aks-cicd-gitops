@@ -78,24 +78,23 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    - `<AKS_RESOURCE_GROUP>`: grupo de recursos del AKS
    - `<AKS_CLUSTER_NAME>`: nombre del clúster AKS
    - `<AZURE_DEVOPS_SERVICE_CONNECTION>`: nombre de conexión service en Azure DevOps
-   - `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>`: nombre de conexión Docker en Azure DevOps
+   
+   **Nota:** este workshop usa una sola conexión **Azure Resource Manager** para build/push a ACR y deploy a AKS.
 
-   **Guía paso a paso para obtener las Service Connections:**
+   **Guía paso a paso para obtener la Service Connection:**
 
    1. Entra a tu proyecto en Azure DevOps.
    2. Ve a **Project settings** (esquina inferior izquierda).
    3. En el menú de la izquierda, abre **Service connections**.
-   4. Identifica o crea estas dos conexiones:
-      - **Azure Resource Manager**: esta se usa para `<AZURE_DEVOPS_SERVICE_CONNECTION>` (deploy a AKS).
-      - **Docker Registry** (apuntando a ACR): esta se usa para `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>` (build/push de imagen).
-   5. Copia el valor exacto de la columna **Name** de cada conexión y pégalo en `azure-pipelines.yml`.
+   4. Crea o identifica una conexión de tipo **Azure Resource Manager**.
+   5. Copia el valor exacto de la columna **Name** y úsalo en `<AZURE_DEVOPS_SERVICE_CONNECTION>`.
 
-   **Qué debe apuntar cada una:**
-   - `<AZURE_DEVOPS_SERVICE_CONNECTION>`: debe tener acceso al Resource Group y al clúster AKS.
-   - `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>`: debe apuntar al ACR correcto y permitir push de imágenes.
+   **Permisos que debe tener esta conexión ARM:**
+   - Permisos sobre el Resource Group donde está AKS (para desplegar).
+   - Permiso `AcrPush` sobre el ACR (para build/push de imágenes).
 
    **Validación rápida:**
-   - Abre `azure-pipelines.yml` y verifica que esos nombres coinciden exactamente con los nombres listados en **Project settings > Service connections**.
+   - Abre `azure-pipelines.yml` y verifica que `<AZURE_DEVOPS_SERVICE_CONNECTION>` coincide exactamente con el nombre listado en **Project settings > Service connections**.
    - Si hay diferencia de mayúsculas, espacios o guiones, el pipeline fallará al resolver la conexión.
 
 3. **Ejecutar el build localmente (opcional)**

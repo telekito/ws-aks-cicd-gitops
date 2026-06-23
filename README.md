@@ -42,7 +42,6 @@ Antes de ejecutar cualquier módulo, debes definir tus valores de Azure. Reempla
 - `<AKS_RESOURCE_GROUP>`: nombre del grupo de recursos (ej: mi-rg)
 - `<AKS_CLUSTER_NAME>`: nombre del clúster AKS (ej: mi-aks)
 - `<AZURE_DEVOPS_SERVICE_CONNECTION>`: nombre de la conexión de servicio en Azure DevOps
-- `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>`: nombre de la conexión de Docker en Azure DevOps
 - `<GIT_REPOSITORY_URL>`: URL completa del repositorio Git (para GitOps)
 
 ## Flujo del workshop

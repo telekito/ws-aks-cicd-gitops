@@ -19,16 +19,28 @@ stages:
         pool:
           vmImage: $(vmImage)
         steps:
-          - task: Docker@2
-            displayName: Build and push image
+          - task: AzureCLI@2
+            displayName: Build and push image to ACR
             inputs:
-              command: buildAndPush
-              repository: $(imageRepository)
-              dockerfile: $(dockerfilePath)
-              containerRegistry: <AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>
-              tags: |
-                $(Build.BuildId)
-                latest
+              azureSubscription: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+
+                IMAGE="$(acrName).azurecr.io/$(imageRepository)"
+                TAG_BUILD="$(Build.BuildId)"
+
+                az acr login --name $(acrName)
+
+                docker build \
+                  -f $(dockerfilePath) \
+                  -t ${IMAGE}:${TAG_BUILD} \
+                  -t ${IMAGE}:latest \
+                  workshop-app
+
+                docker push ${IMAGE}:${TAG_BUILD}
+                docker push ${IMAGE}:latest
 
   - stage: Deploy
     displayName: 'Deploy to AKS'

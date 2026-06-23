@@ -8,8 +8,7 @@
 - [ ] Azure DevOps project con acceso a todos los participantes
 - [ ] Git repo creado para GitOps (con contenido de workshop-app/k8s)
 - [ ] Conexiones de servicio configuradas en Azure DevOps:
-  - [ ] Conexión ARM para AKS
-  - [ ] Conexión Docker para ACR
+  - [ ] Conexión ARM con permisos sobre AKS y ACR (AcrPush)
 
 ### Preparación de materiales (día anterior)
 - [ ] Todos los placeholders (`<ACR_NAME>`, etc.) documentados para los participantes
