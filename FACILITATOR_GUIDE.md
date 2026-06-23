@@ -43,8 +43,8 @@
 ### Módulo 2 (45 min)
 - [ ] Explicar pipeline CI/CD
 - [ ] Revisar `azure-pipelines.yml` línea por línea
-- [ ] Ejecutar `build-and-push-image.ps1` para push a ACR
-- [ ] Ejecutar `deploy-to-aks.ps1` para despliegue manual
+- [ ] Crear/validar pipeline en Azure DevOps con `azure-pipelines.yml`
+- [ ] Ejecutar `Run pipeline` y revisar stages Build/Deploy
 - [ ] **Checkpoint**: app desplegada y accesible
 
 ### Módulo 3 (50 min)

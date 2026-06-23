@@ -51,6 +51,33 @@ stages:
         pool:
           vmImage: $(vmImage)
         steps:
+          - task: Bash@3
+            displayName: Validate required Kubernetes manifests
+            inputs:
+              targetType: inline
+              script: |
+                set -euo pipefail
+
+                REQUIRED_FILES=(
+                  "$(manifestPath)/namespace.yaml"
+                  "$(manifestPath)/configmap.yaml"
+                  "$(manifestPath)/service.yaml"
+                  "$(manifestPath)/deployment.yaml"
+                )
+
+                echo "Checking manifests in repo checkout..."
+                ls -la "$(manifestPath)" || true
+
+                for file in "${REQUIRED_FILES[@]}"; do
+                  if [ ! -f "$file" ]; then
+                    echo "ERROR: Missing required file: $file"
+                    echo "Ensure the file exists in the repository and was committed/pushed to the branch being built."
+                    exit 1
+                  fi
+                done
+
+                echo "All required manifests are present."
+
           - task: Kubernetes@1
             displayName: Apply namespace
             inputs:
@@ -63,7 +90,7 @@ stages:
               configuration: $(manifestPath)/namespace.yaml
 
           - task: Kubernetes@1
-            displayName: Apply ConfigMap and Service
+            displayName: Apply ConfigMap
             inputs:
               connectionType: Azure Resource Manager
               azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
@@ -71,9 +98,18 @@ stages:
               kubernetesCluster: $(aksClusterName)
               command: apply
               useConfigurationFile: true
-              configuration: |
-                $(manifestPath)/configmap.yaml
-                $(manifestPath)/service.yaml
+              configuration: $(manifestPath)/configmap.yaml
+
+          - task: Kubernetes@1
+            displayName: Apply Service
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: apply
+              useConfigurationFile: true
+              configuration: $(manifestPath)/service.yaml
 
           - task: Kubernetes@1
             displayName: Apply Deployment

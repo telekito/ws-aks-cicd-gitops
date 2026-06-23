@@ -12,15 +12,12 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 
 ## Demo guiada
 - Revisar el pipeline.
-- Ver el build de la imagen.
-- Publicar la imagen en ACR.
-- Desplegar en AKS.
+- Lanzar el pipeline.
+- Validar build/push de imagen en ACR.
+- Validar despliegue en AKS.
 
-## Scripts y archivos
+## Archivos
 - `azure-pipelines.yml`: pipeline de CI/CD.
-- `scripts/build-and-push-image.ps1`: construye y sube la imagen a ACR.
-- `scripts/build-image.ps1`: build local para practicar.
-- `scripts/deploy-to-aks.ps1`: despliegue manual equivalente al pipeline.
 - `..\workshop-app`: aplicación de ejemplo común.
 - `..\workshop-app\k8s`: manifiestos base de Kubernetes.
 
@@ -97,39 +94,37 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    - Abre `azure-pipelines.yml` y verifica que `<AZURE_DEVOPS_SERVICE_CONNECTION>` coincide exactamente con el nombre listado en **Project settings > Service connections**.
    - Si hay diferencia de mayúsculas, espacios o guiones, el pipeline fallará al resolver la conexión.
 
-3. **Ejecutar el build localmente (opcional)**
-   ```powershell
-   .\scripts\build-image.ps1 -ImageName workshop-app -Tag 1.0.0 -ContextPath ..\workshop-app
-   ```
-   **Validación esperada**: imagen built sin errores.
+3. **Crear o validar el pipeline en Azure DevOps**
+   - Ve a **Pipelines > Pipelines > New pipeline**.
+   - Selecciona tu repositorio.
+   - Elige **Existing Azure Pipelines YAML file** y selecciona `azure-pipelines.yml`.
+   - Guarda el pipeline.
+   **Validación esperada**: pipeline creado y apuntando al YAML correcto.
 
-4. **Construir y subir la imagen a ACR**
-   ```powershell
-   # Con tag 'latest' (default)
-   .\scripts\build-and-push-image.ps1
-   
-   # O con tag personalizado
-   .\scripts\build-and-push-image.ps1 -ImageTag "v1.0"
-   
-   # Solo build local sin push
-   .\scripts\build-and-push-image.ps1 -SkipPush
-   ```
-   **Validación esperada**: imagen buildada y subida a ACR sin errores.
+4. **Ejecutar el pipeline (Run pipeline)**
+   - Pulsa **Run pipeline** sobre la rama `main`.
+   - Espera la ejecución de los stages `Build` y `Deploy`.
+   **Validación esperada**: ejecución en estado `Succeeded`.
 
-5. **Ejecutar el despliegue manual equivalente al pipeline**
-   ```powershell
-   .\scripts\deploy-to-aks.ps1 -Namespace aks-workshop -ImageTag latest -AcrName <ACR_NAME>
-   ```
-   **Validación esperada**: deployment completado, pods en estado Running.
+5. **Validar stage Build (imagen en ACR)**
+   - Abre los logs del stage `Build`.
+   - Verifica que se ejecutó login a ACR, `docker build` y `docker push`.
+   - Comprueba en ACR que existe la imagen `workshop-app` con tag `Build.BuildId` y `latest`.
+   **Validación esperada**: imagen publicada correctamente.
 
-6. **Verificar el despliegue**
+6. **Validar stage Deploy (aplicación en AKS)**
+   - Abre los logs del stage `Deploy`.
+   - Verifica `apply` de `namespace/configmap/service/deployment` y `rollout status` exitoso.
+   **Validación esperada**: despliegue completado sin errores.
+
+7. **Verificar el despliegue desde kubectl**
    ```powershell
    kubectl get all -n aks-workshop
    kubectl logs $(kubectl get pods -n aks-workshop -o jsonpath='{.items[0].metadata.name}') -n aks-workshop
    ```
    **Validación esperada**: 2 pods running, logs mostrando app escuchando en puerto 3000.
 
-7. **Test de conectividad**
+8. **Test de conectividad**
    ```powershell
    kubectl port-forward svc/workshop-app 8080:80 -n aks-workshop
    # En otra terminal
@@ -139,6 +134,8 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 
 ### Errores típicos
 
+- **Error: pipeline no dispara**: revisa que el YAML esté en la raíz y la rama trigger sea `main`.
+- **Error: `No configuration file matching .../configmap.yaml`**: el archivo no está en la rama que está construyendo el pipeline. Verifica `workshop-app/k8s/configmap.yaml` en el repo remoto y haz `git add`, `git commit` y `git push`.
 - **Error: imagen no encontrada**: verifica que el build push fue exitoso en ACR con `az acr repository list`.
 - **Error: Pods en CrashLoopBackOff**: revisa los logs con `kubectl logs <pod>` y `kubectl describe pod <pod>`.
 - **Error: conexión de servicio no configurada**: crea la conexión manualmente en Azure DevOps Settings.

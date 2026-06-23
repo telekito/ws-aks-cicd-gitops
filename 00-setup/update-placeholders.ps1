@@ -47,7 +47,6 @@ Write-Host ""
 $filesToProcess = @(
   '..\01-kubernetes-essentials\README.md'
   '..\02-azure-devops-cicd\README.md'
-  '..\02-azure-devops-cicd\scripts\deploy-to-aks.ps1'
   '..\02-azure-devops-cicd\azure-pipelines.yml'
   '..\03-gitops-argocd\README.md'
   '..\03-gitops-argocd\manifests\application.yaml'
