@@ -54,6 +54,24 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    - `<AZURE_DEVOPS_SERVICE_CONNECTION>`: nombre de conexión service en Azure DevOps
    - `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>`: nombre de conexión Docker en Azure DevOps
 
+   **Guía paso a paso para obtener las Service Connections:**
+
+   1. Entra a tu proyecto en Azure DevOps.
+   2. Ve a **Project settings** (esquina inferior izquierda).
+   3. En el menú de la izquierda, abre **Service connections**.
+   4. Identifica o crea estas dos conexiones:
+      - **Azure Resource Manager**: esta se usa para `<AZURE_DEVOPS_SERVICE_CONNECTION>` (deploy a AKS).
+      - **Docker Registry** (apuntando a ACR): esta se usa para `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>` (build/push de imagen).
+   5. Copia el valor exacto de la columna **Name** de cada conexión y pégalo en `azure-pipelines.yml`.
+
+   **Qué debe apuntar cada una:**
+   - `<AZURE_DEVOPS_SERVICE_CONNECTION>`: debe tener acceso al Resource Group y al clúster AKS.
+   - `<AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>`: debe apuntar al ACR correcto y permitir push de imágenes.
+
+   **Validación rápida:**
+   - Abre `azure-pipelines.yml` y verifica que esos nombres coinciden exactamente con los nombres listados en **Project settings > Service connections**.
+   - Si hay diferencia de mayúsculas, espacios o guiones, el pipeline fallará al resolver la conexión.
+
 3. **Ejecutar el build localmente (opcional)**
    ```powershell
    .\scripts\build-image.ps1 -ImageName workshop-app -Tag 1.0.0 -ContextPath ..\workshop-app
