@@ -1,0 +1,9 @@
+{
+  "name": "aks-workshop-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sample app for AKS CI/CD and GitOps workshop",
+  "scripts": {
+    "start": "node src/server.js"
+  }
+}

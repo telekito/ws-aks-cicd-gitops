@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: workshop-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: <GIT_REPOSITORY_URL>
+    targetRevision: main
+    path: workshop-app/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aks-workshop
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

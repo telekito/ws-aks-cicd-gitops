@@ -1,0 +1,95 @@
+trigger:
+  - main
+
+variables:
+  vmImage: ubuntu-latest
+  imageRepository: workshop-app
+  dockerfilePath: workshop-app/Dockerfile
+  manifestPath: workshop-app/k8s
+  acrName: <ACR_NAME>
+  aksResourceGroup: <AKS_RESOURCE_GROUP>
+  aksClusterName: <AKS_CLUSTER_NAME>
+
+stages:
+  - stage: Build
+    displayName: 'Build and push image to ACR'
+    jobs:
+      - job: BuildAndPush
+        displayName: 'Build Docker image and push to ACR'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: Docker@2
+            displayName: Build and push image
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: <AZURE_DEVOPS_SERVICE_CONNECTION_TO_ACR>
+              tags: |
+                $(Build.BuildId)
+                latest
+
+  - stage: Deploy
+    displayName: 'Deploy to AKS'
+    dependsOn: Build
+    jobs:
+      - job: DeployToAKS
+        displayName: 'Deploy application to AKS'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: Kubernetes@1
+            displayName: Apply namespace
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: apply
+              useConfigurationFile: true
+              configuration: $(manifestPath)/namespace.yaml
+
+          - task: Kubernetes@1
+            displayName: Apply ConfigMap and Service
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: apply
+              useConfigurationFile: true
+              configuration: |
+                $(manifestPath)/configmap.yaml
+                $(manifestPath)/service.yaml
+
+          - task: Kubernetes@1
+            displayName: Apply Deployment
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: apply
+              useConfigurationFile: true
+              configuration: $(manifestPath)/deployment.yaml
+
+          - task: Kubernetes@1
+            displayName: Update image tag
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: set
+              arguments: 'image deployment/workshop-app workshop-app=$(acrName).azurecr.io/$(imageRepository):$(Build.BuildId) -n aks-workshop --record'
+
+          - task: Kubernetes@1
+            displayName: Verify rollout
+            inputs:
+              connectionType: Azure Resource Manager
+              azureSubscriptionEndpoint: <AZURE_DEVOPS_SERVICE_CONNECTION>
+              azureResourceGroup: $(aksResourceGroup)
+              kubernetesCluster: $(aksClusterName)
+              command: rollout
+              arguments: 'status deployment/workshop-app -n aks-workshop'
