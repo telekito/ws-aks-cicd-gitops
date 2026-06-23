@@ -45,6 +45,8 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 <repo-root>/
 ├── azure-pipelines.yml
 └── workshop-app/
+   ├── src/
+   │  └── server.js
    ├── Dockerfile
    └── k8s/
       ├── namespace.yaml
@@ -55,9 +57,11 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 
 **Validación rápida (antes de ejecutar pipeline):**
 - En la raíz del repo debe existir `azure-pipelines.yml`.
+- En `workshop-app/src/` debe existir el código fuente de la app (ej. `server.js`, `index.html`).
 - En `workshop-app/` debe existir `Dockerfile`.
 - En `workshop-app/k8s/` deben existir los manifests de Kubernetes.
 - La rama principal del repositorio debe ser `main` (o ajustar el trigger del pipeline).
+- El código debe estar committed y pushed al repositorio remoto (Azure DevOps/GitHub), no solo local.
 
 ### Pasos
 
@@ -65,6 +69,8 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    - Abre `azure-pipelines.yml`
    - Identifica las dos etapas: Build y Deploy
    - Nota los placeholders que necesitan reemplazo
+
+   **Importante:** el pipeline construye la imagen desde el código que está en el repositorio remoto. Si cambias archivos locales en `workshop-app/src`, primero haz `git add`, `git commit` y `git push` para que esos cambios entren al build.
 
 2. **Configurar los valores del pipeline**
    Reemplaza en `azure-pipelines.yml`:
