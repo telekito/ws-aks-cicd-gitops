@@ -8,10 +8,10 @@ spec:
   source:
     repoURL: <GIT_REPOSITORY_URL>
     targetRevision: main
-    path: workshop-app/k8s
+    path: workshop-app/k8s-argo
   destination:
     server: https://kubernetes.default.svc
-    namespace: aks-workshop
+    namespace: aks-workshop-argo
   syncPolicy:
     automated:
       prune: true

@@ -19,7 +19,7 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 ## Archivos
 - `azure-pipelines.yml`: pipeline de CI/CD.
 - `..\workshop-app`: aplicación de ejemplo común.
-- `..\workshop-app\k8s`: manifiestos base de Kubernetes.
+- `..\workshop-app\k8s-pipeline`: manifiestos de despliegue para CI/CD en namespace dedicado.
 
 ## Laboratorio
 1. Revisar el YAML del pipeline.
@@ -31,7 +31,7 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 
 ### Prerequisitos
 - Tener el módulo 1 (Kubernetes & AKS Essentials) completado
-- kubectl conectado a AKS y namespace aks-workshop creado
+- kubectl conectado a AKS (el pipeline creará el namespace `aks-workshop-pipeline`)
 - Tener un ACR creado y credenciales disponibles
 - Tener acceso a un Azure DevOps Project
 - Tener el código en un repositorio con `azure-pipelines.yml` en la raíz y la app en `workshop-app/`
@@ -50,13 +50,18 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
       ├── configmap.yaml
       ├── deployment.yaml
       └── service.yaml
+   └── k8s-pipeline/
+      ├── namespace.yaml
+      ├── configmap.yaml
+      ├── deployment.yaml
+      └── service.yaml
 ```
 
 **Validación rápida (antes de ejecutar pipeline):**
 - En la raíz del repo debe existir `azure-pipelines.yml`.
 - En `workshop-app/src/` debe existir el código fuente de la app (ej. `server.js`, `index.html`).
 - En `workshop-app/` debe existir `Dockerfile`.
-- En `workshop-app/k8s/` deben existir los manifests de Kubernetes.
+- En `workshop-app/k8s-pipeline/` deben existir los manifests usados por el pipeline.
 - La rama principal del repositorio debe ser `main` (o ajustar el trigger del pipeline).
 - El código debe estar committed y pushed al repositorio remoto (Azure DevOps/GitHub), no solo local.
 
@@ -115,18 +120,19 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 6. **Validar stage Deploy (aplicación en AKS)**
    - Abre los logs del stage `Deploy`.
    - Verifica `apply` de `namespace/configmap/service/deployment` y `rollout status` exitoso.
+   - Nota: el pipeline despliega en el namespace `aks-workshop-pipeline`.
    **Validación esperada**: despliegue completado sin errores.
 
 7. **Verificar el despliegue desde kubectl**
    ```powershell
-   kubectl get all -n aks-workshop
-   kubectl logs $(kubectl get pods -n aks-workshop -o jsonpath='{.items[0].metadata.name}') -n aks-workshop
+   kubectl get all -n aks-workshop-pipeline
+   kubectl logs $(kubectl get pods -n aks-workshop-pipeline -o jsonpath='{.items[0].metadata.name}') -n aks-workshop-pipeline
    ```
    **Validación esperada**: 2 pods running, logs mostrando app escuchando en puerto 3000.
 
 8. **Test de conectividad**
    ```powershell
-   kubectl port-forward svc/workshop-app 8080:80 -n aks-workshop
+   kubectl port-forward svc/workshop-app 8080:80 -n aks-workshop-pipeline
    # En otra terminal
    Invoke-WebRequest http://localhost:8080
    ```
@@ -135,7 +141,7 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 ### Errores típicos
 
 - **Error: pipeline no dispara**: revisa que el YAML esté en la raíz y la rama trigger sea `main`.
-- **Error: `No configuration file matching .../configmap.yaml`**: el archivo no está en la rama que está construyendo el pipeline. Verifica `workshop-app/k8s/configmap.yaml` en el repo remoto y haz `git add`, `git commit` y `git push`.
+- **Error: `No configuration file matching .../configmap.yaml`**: el archivo no está en la rama que está construyendo el pipeline. Verifica `workshop-app/k8s-pipeline/configmap.yaml` en el repo remoto y haz `git add`, `git commit` y `git push`.
 - **Error: imagen no encontrada**: verifica que el build push fue exitoso en ACR con `az acr repository list`.
 - **Error: Pods en CrashLoopBackOff**: revisa los logs con `kubectl logs <pod>` y `kubectl describe pod <pod>`.
 - **Error: conexión de servicio no configurada**: crea la conexión manualmente en Azure DevOps Settings.

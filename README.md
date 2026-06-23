@@ -79,4 +79,4 @@ Módulo 6: Buenas prácticas y cierre
 Si algo falla, revisa:
 1. Los pasos detallados en cada README.
 2. Los errores típicos documentados en cada módulo.
-3. Ejecuta `kubectl get events -n aks-workshop` para ver qué pasó en el clúster.
+3. Ejecuta `kubectl get events -n <NAMESPACE>` para ver qué pasó en el clúster (`aks-workshop-pipeline` o `aks-workshop-argo`).

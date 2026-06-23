@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-app-config
+  namespace: aks-workshop-argo
+data:
+  APP_NAME: aks-workshop-argo-app
+  ENVIRONMENT: lab
+

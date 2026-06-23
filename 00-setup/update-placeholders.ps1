@@ -62,6 +62,8 @@ $filesToProcess = @(
   '..\03-gitops-argocd\manifests\application.yaml'
   '..\04-operacion-aks\README.md'
   '..\workshop-app\k8s\deployment.yaml'
+  '..\workshop-app\k8s-pipeline\deployment.yaml'
+  '..\workshop-app\k8s-argo\deployment.yaml'
   '..\workshop-app\k8s\ingress.yaml'
 )
 

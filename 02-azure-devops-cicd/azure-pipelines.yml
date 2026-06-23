@@ -5,7 +5,8 @@ variables:
   vmImage: ubuntu-latest
   imageRepository: workshop-app
   dockerfilePath: workshop-app/Dockerfile
-  manifestPath: workshop-app/k8s
+  manifestPath: workshop-app/k8s-pipeline
+  kubernetesNamespace: aks-workshop-pipeline
   acrName: <ACR_NAME>
   aksResourceGroup: <AKS_RESOURCE_GROUP>
   aksClusterName: <AKS_CLUSTER_NAME>
@@ -130,7 +131,7 @@ stages:
               azureResourceGroup: $(aksResourceGroup)
               kubernetesCluster: $(aksClusterName)
               command: set
-              arguments: 'image deployment/workshop-app workshop-app=$(acrName).azurecr.io/$(imageRepository):$(Build.BuildId) -n aks-workshop --record'
+              arguments: 'image deployment/workshop-app workshop-app=$(acrName).azurecr.io/$(imageRepository):$(Build.BuildId) -n $(kubernetesNamespace) --record'
 
           - task: Kubernetes@1
             displayName: Verify rollout
@@ -140,4 +141,4 @@ stages:
               azureResourceGroup: $(aksResourceGroup)
               kubernetesCluster: $(aksClusterName)
               command: rollout
-              arguments: 'status deployment/workshop-app -n aks-workshop'
+              arguments: 'status deployment/workshop-app -n $(kubernetesNamespace)'

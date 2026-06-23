@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-app-config
+  namespace: aks-workshop-pipeline
+data:
+  APP_NAME: aks-workshop-pipeline-app
+  ENVIRONMENT: lab
+

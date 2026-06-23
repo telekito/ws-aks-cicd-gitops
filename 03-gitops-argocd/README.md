@@ -19,7 +19,7 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 ### Prerequisitos
 - Tener módulo 2 completado (app desplegada con CI/CD)
 - Acceso a un repositorio Git con permisos de lectura
-- El contenido de `workshop-app/k8s/` debe estar en ese repositorio bajo la misma estructura
+- El contenido de `workshop-app/k8s-argo/` debe estar en ese repositorio bajo la misma estructura
 
 ### Pasos
 
@@ -52,7 +52,7 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 5. **Revisar el manifiesto de Application**
    - Abre `manifests/application.yaml`
    - Reemplaza `<GIT_REPOSITORY_URL>` con la URL real del repo
-   - Nota: ya apunta a `workshop-app/k8s` como path
+   - Nota: ya apunta a `workshop-app/k8s-argo` como path
 
 6. **Crear la Application en Argo CD**
    ```powershell
@@ -69,12 +69,12 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 
 8. **Ver la app sincronizada en el namespace**
    ```powershell
-   kubectl get all -n aks-workshop
+   kubectl get all -n aks-workshop-argo
    ```
    **Validación esperada**: Deployment y pods están, igual que con CI/CD pero gestionados por Argo CD.
 
 9. **Demostración de GitOps: cambiar algo en Git y ver sync automático**
-   - Modifica un valor en `workshop-app/k8s/configmap.yaml` (ej: ENVIRONMENT)
+   - Modifica un valor en `workshop-app/k8s-argo/configmap.yaml` (ej: ENVIRONMENT)
    - Haz commit y push
    - Vuelve a la UI de Argo CD y observa sync automático (unos 3-5 seg)
    - O ejecuta `kubectl apply -f ./manifests/application.yaml --force-sync`
