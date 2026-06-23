@@ -83,20 +83,22 @@ else {
 }
 Write-Host ""
 
-# Parámetros interactivos si no están definidos
-while (-not $ResourceGroup) {
-  $ResourceGroup = (Read-Host "Nombre del grupo de recursos (ej: aks-workshop-rg)").Trim()
-  if (-not $ResourceGroup) { Write-Host "⚠️  El nombre del grupo de recursos es obligatorio" -ForegroundColor Yellow }
+# Generar sufijo aleatorio de 3 dígitos para hacer recursos únicos
+$randomSuffix = Get-Random -Minimum 100 -Maximum 999
+Write-Host "Sufijo aleatorio generado: $randomSuffix"
+Write-Host ""
+
+# Parámetros interactivos con valores por defecto
+if (-not $ResourceGroup) {
+  $ResourceGroup = "aks-workshop-rg-$randomSuffix"
 }
 
-while (-not $AksClusterName) {
-  $AksClusterName = (Read-Host "Nombre del clúster AKS (ej: aks-workshop)").Trim()
-  if (-not $AksClusterName) { Write-Host "⚠️  El nombre del clúster AKS es obligatorio" -ForegroundColor Yellow }
+if (-not $AksClusterName) {
+  $AksClusterName = "aks-workshop-$randomSuffix"
 }
 
-while (-not $AcrName) {
-  $AcrName = (Read-Host "Nombre del ACR sin .azurecr.io (ej: aksworkshoproeg)").Trim()
-  if (-not $AcrName) { Write-Host "⚠️  El nombre del ACR es obligatorio" -ForegroundColor Yellow }
+if (-not $AcrName) {
+  $AcrName = "aksworkshop$randomSuffix"
 }
 
 Write-Host ""
@@ -111,10 +113,14 @@ Write-Host "Nodos: $NodeCount"
 Write-Host "VM Size: $VmSize"
 Write-Host ""
 
-$confirm = Read-Host "¿Desplegar con estos parámetros? (s/n)"
-if ($confirm -ne 's' -and $confirm -ne 'S') {
-  Write-Host "Despliegue cancelado"
-  exit 0
+if (-not $SkipValidation) {
+  $confirm = Read-Host "¿Desplegar con estos parámetros? (s/n)"
+  if ($confirm -ne 's' -and $confirm -ne 'S') {
+    Write-Host "Despliegue cancelado"
+    exit 0
+  }
+} else {
+  Write-Host "✅ Modo automático: despliegue sin confirmación"
 }
 
 # Crear grupo de recursos
