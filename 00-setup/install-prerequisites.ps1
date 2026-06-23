@@ -40,52 +40,24 @@ if (-not $isAdmin) {
   exit 1
 }
 
-# Validar CPU soporta virtualización
-Write-Host "`n--- Validando soporte de virtualización en CPU ---"
-try {
-  $cpuVirtualization = Get-WmiObject -Class Win32_Processor | Select-Object -ExpandProperty VirtualizationFirmwareEnabled
-  if ($null -eq $cpuVirtualization) {
-    Write-Host "⚠️  No se puede determinar si virtualización está habilitada en el BIOS" -ForegroundColor Yellow
-    Write-Host "   Verifica en la configuración del BIOS que la virtualización esté habilitada"
-    Write-Host "   (VT-x para Intel, AMD-V para AMD)"
-  }
-  elseif ($cpuVirtualization) {
-    Write-Host "✅ Virtualización está habilitada en el CPU"
-  }
-  else {
-    Write-Host "❌ Virtualización NO está habilitada en el BIOS" -ForegroundColor Red
-    Write-Host "   Requiere: Reiniciar en BIOS y habilitar VT-x (Intel) o AMD-V (AMD)"
-    exit 1
-  }
-}
-catch {
-  Write-Host "⚠️  No se pudo validar virtualización del CPU" -ForegroundColor Yellow
+# Confirmación manual de virtualización y Hyper-V
+Write-Host "`n--- Verificación manual de virtualización y Hyper-V ---"
+$cpuVirtConfirm = Read-Host "¿Tienes habilitada la virtualización en BIOS (VT-x/AMD-V)? (s/n)"
+if ($cpuVirtConfirm -ne 's' -and $cpuVirtConfirm -ne 'S') {
+  Write-Host "❌ Requisito no cumplido: virtualización en BIOS" -ForegroundColor Red
+  Write-Host "   Habilita VT-x (Intel) o AMD-V (AMD) en BIOS y vuelve a ejecutar el script"
+  exit 1
 }
 
-# Validar Hyper-V es un pre-requisito
-Write-Host "`n--- Validando y habilitando Hyper-V (REQUISITO PREVIO) ---"
-$hyperVFeature = Get-WindowsOptionalFeature -Online -FeatureName Hyper-V -ErrorAction SilentlyContinue
-$hyperVEnabled = $hyperVFeature.State -eq 'Enabled'
+$hyperVConfirm = Read-Host "¿Tienes Hyper-V habilitado en Windows Features? (s/n)"
+if ($hyperVConfirm -ne 's' -and $hyperVConfirm -ne 'S') {
+  Write-Host "❌ Requisito no cumplido: Hyper-V" -ForegroundColor Red
+  Write-Host "   Habilítalo en: Panel de Control > Programas > Activar o desactivar características de Windows"
+  Write-Host "   Marca 'Hyper-V' y reinicia el equipo"
+  exit 1
+}
 
-if ($hyperVEnabled) {
-  Write-Host "✅ Hyper-V ya está habilitado"
-}
-else {
-  Write-Host "⏳ Habilitando Hyper-V (necesario para Docker)..."
-  try {
-    Enable-WindowsOptionalFeature -Online -FeatureName Hyper-V -All -NoRestart
-    Write-Host "✅ Hyper-V habilitado exitosamente"
-    Write-Host "⚠️  IMPORTANTE: Debes REINICIAR tu PC para completar la activación de Hyper-V"
-    $hyperVRebootRequired = $true
-  }
-  catch {
-    Write-Host "❌ Error habilitando Hyper-V: $_" -ForegroundColor Red
-    Write-Host "   Intenta habilitarlo manualmente:"
-    Write-Host "   Panel de Control > Programas > Activar o desactivar características de Windows"
-    Write-Host "   Marca 'Hyper-V' y reinicia"
-    exit 1
-  }
-}
+Write-Host "✅ Requisitos confirmados por el usuario (virtualización + Hyper-V)"
 
 # Check winget availability
 Write-Host "`nValidando winget..."
