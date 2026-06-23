@@ -53,7 +53,7 @@ Write-Host ""
 
 # Autenticación en Azure
 Write-Host "Validando autenticación en Azure..."
-$currentAccount = az account show --output json 2>/dev/null | ConvertFrom-Json
+$currentAccount = az account show --output json 2>$null | ConvertFrom-Json
 if (-not $currentAccount) {
   Write-Host "❌ No estás autenticado en Azure"
   Write-Host "   Ejecuta: az login"
@@ -85,16 +85,19 @@ else {
 Write-Host ""
 
 # Parámetros interactivos si no están definidos
-if (-not $ResourceGroup) {
-  $ResourceGroup = Read-Host "Nombre del grupo de recursos (ej: aks-workshop-rg)"
+while (-not $ResourceGroup) {
+  $ResourceGroup = (Read-Host "Nombre del grupo de recursos (ej: aks-workshop-rg)").Trim()
+  if (-not $ResourceGroup) { Write-Host "⚠️  El nombre del grupo de recursos es obligatorio" -ForegroundColor Yellow }
 }
 
-if (-not $AksClusterName) {
-  $AksClusterName = Read-Host "Nombre del clúster AKS (ej: aks-workshop)"
+while (-not $AksClusterName) {
+  $AksClusterName = (Read-Host "Nombre del clúster AKS (ej: aks-workshop)").Trim()
+  if (-not $AksClusterName) { Write-Host "⚠️  El nombre del clúster AKS es obligatorio" -ForegroundColor Yellow }
 }
 
-if (-not $AcrName) {
-  $AcrName = Read-Host "Nombre del ACR sin .azurecr.io (ej: aksworshopreg)"
+while (-not $AcrName) {
+  $AcrName = (Read-Host "Nombre del ACR sin .azurecr.io (ej: aksworkshoproeg)").Trim()
+  if (-not $AcrName) { Write-Host "⚠️  El nombre del ACR es obligatorio" -ForegroundColor Yellow }
 }
 
 Write-Host ""
@@ -118,90 +121,83 @@ if ($confirm -ne 's' -and $confirm -ne 'S') {
 # Crear grupo de recursos
 Write-Host ""
 Write-Host "Creando grupo de recursos..."
-try {
-  az group create `
-    --name $ResourceGroup `
-    --location $Location `
-    --output none
-  Write-Host "✅ Grupo de recursos creado"
-}
-catch {
-  Write-Host "❌ Error creando grupo de recursos: $_" -ForegroundColor Red
+az group create `
+  --name $ResourceGroup `
+  --location $Location `
+  --output none
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "❌ Error creando grupo de recursos" -ForegroundColor Red
   exit 1
 }
+Write-Host "✅ Grupo de recursos creado"
 
 # Crear ACR
 Write-Host ""
 Write-Host "Creando Azure Container Registry..."
-try {
-  az acr create `
-    --resource-group $ResourceGroup `
-    --name $AcrName `
-    --sku Basic `
-    --output none
+az acr create `
+  --resource-group $ResourceGroup `
+  --name $AcrName `
+  --sku Basic `
+  --output none
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "⚠️  Error creando ACR (puede que ya exista o el nombre no esté disponible)" -ForegroundColor Yellow
+} else {
   Write-Host "✅ ACR creado: $AcrName.azurecr.io"
-}
-catch {
-  Write-Host "⚠️  Error creando ACR (puede que ya exista): $_" -ForegroundColor Yellow
 }
 
 # Crear AKS
 Write-Host ""
 Write-Host "Creando clúster AKS (esto puede tomar 5-10 minutos)..."
-try {
-  $startTime = Get-Date
-  
-  az aks create `
-    --resource-group $ResourceGroup `
-    --name $AksClusterName `
-    --node-count $NodeCount `
-    --vm-set-type VirtualMachineScaleSets `
-    --load-balancer-sku standard `
-    --enable-managed-identity `
-    --network-plugin azure `
-    --enable-addons monitoring,http_application_routing `
-    --node-vm-size $VmSize `
-    --attach-acr $AcrName `
-    --output none
-  
-  $duration = (Get-Date) - $startTime
-  Write-Host "✅ Clúster AKS creado en $($duration.TotalMinutes)m"
-}
-catch {
-  Write-Host "❌ Error creando AKS: $_" -ForegroundColor Red
+$startTime = Get-Date
+
+az aks create `
+  --resource-group $ResourceGroup `
+  --name $AksClusterName `
+  --node-count $NodeCount `
+  --vm-set-type VirtualMachineScaleSets `
+  --load-balancer-sku standard `
+  --enable-managed-identity `
+  --network-plugin azure `
+  --enable-addons monitoring,http_application_routing `
+  --node-vm-size $VmSize `
+  --attach-acr $AcrName `
+  --output none
+
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "❌ Error creando AKS" -ForegroundColor Red
   exit 1
 }
+$duration = (Get-Date) - $startTime
+Write-Host "✅ Clúster AKS creado en $([math]::Round($duration.TotalMinutes, 1))m"
 
 # Obtener credenciales
 Write-Host ""
 Write-Host "Obteniendo credenciales de kubectl..."
-try {
-  az aks get-credentials `
-    --resource-group $ResourceGroup `
-    --name $AksClusterName `
-    --overwrite-existing `
-    --output none
-  Write-Host "✅ Credenciales configuradas"
-}
-catch {
-  Write-Host "❌ Error obteniendo credenciales: $_" -ForegroundColor Red
+az aks get-credentials `
+  --resource-group $ResourceGroup `
+  --name $AksClusterName `
+  --overwrite-existing `
+  --output none
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "❌ Error obteniendo credenciales" -ForegroundColor Red
   exit 1
 }
+Write-Host "✅ Credenciales configuradas"
 
 # Verificar conexión
 Write-Host ""
 Write-Host "Verificando conexión al clúster..."
-try {
-  $nodes = kubectl get nodes -o json | ConvertFrom-Json
+$nodesJson = kubectl get nodes -o json 2>$null
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "⚠️  No se pudo verificar conexión al clúster" -ForegroundColor Yellow
+} else {
+  $nodes = $nodesJson | ConvertFrom-Json
   Write-Host "✅ Conectado al clúster"
   Write-Host "   Nodos disponibles: $($nodes.items.Count)"
   foreach ($node in $nodes.items) {
     $ready = $node.status.conditions | Where-Object { $_.type -eq 'Ready' } | Select-Object -ExpandProperty status
     Write-Host "   - $($node.metadata.name): $ready"
   }
-}
-catch {
-  Write-Host "⚠️  Error verificando conexión: $_" -ForegroundColor Yellow
 }
 
 # Resumen final
