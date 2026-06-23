@@ -105,12 +105,3 @@ GitOps: Argo ApplicationSet auto-sincroniza múltiples clusters
 4. **Backup & Disaster Recovery**: Velero para backups.
 5. **Cost Optimization**: autoscaling, rightsizing, Azure Advisor.
 
-## Recursos útiles
-
-- [Azure Kubernetes Service docs](https://docs.microsoft.com/azure/aks)
-- [Argo CD documentation](https://argo-cd.readthedocs.io)
-- [Kubernetes best practices](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/)
-- [GitOps best practices](https://www.cncf.io/blog/2023/08/01/gitops-best-practices/)
-
-## Resultado esperado
-El participante termina con una visión práctica, coherente y aplicable del stack completo AKS + CI/CD + GitOps.

@@ -37,12 +37,14 @@ El repo GitOps debe quedar así:
 ```text
 <repo-gitops>/
 └── k8s-argo/
-   ├── namespace.yaml
-   ├── configmap.yaml
-   ├── deployment.yaml
-   ├── service.yaml
-   └── ingress.yaml
+    ├── namespace.yaml
+    ├── configmap.yaml
+    ├── deployment.yaml
+    ├── service.yaml
+    └── ingress.yaml
 ```
+
+Comando ejemplo para copiar en Windows (desde la raíz de este repo):
 
 Después de copiar:
 
@@ -71,14 +73,15 @@ Después de copiar:
 3. **Acceder a la UI de Argo CD**
    - Abre en navegador: `https://<EXTERNAL-IP>`
    - Login: `admin` / `<password>`
-   
+
    **Validación esperada**: dashboard de Argo CD sin errores.
 
 4. **Configurar el repositorio Git dedicado en Argo CD**
    - En UI: Settings > Repositories > Connect Repo
    - Type: Git
    - Repository URL: `<GIT_REPOSITORY_URL>`
-   - Si es privado, añade credenciales
+   - Si es privado, añade credenciales (HTTPS con usuario + token)
+   - Para Azure DevOps usa URL tipo: `https://dev.azure.com/<org>/<project>/_git/<repo>`
 
 5. **Desplegar la Application con script**
    ```powershell
@@ -101,6 +104,12 @@ Después de copiar:
 
 - **Error: Argo CD no se instala**: verifica acceso a internet para descargar el manifest oficial.
 - **Error: no hay IP pública**: espera unos minutos y ejecuta `kubectl get svc argocd-server -n argocd -w`.
+- **Error: `Failed to load target state: ... failed to list refs: authentication required`**:
+  1. En Argo CD, ve a Settings > Repositories y confirma que el repo esté en estado **Successful**.
+  2. Si no está Successful, elimina y vuelve a conectar el repo con credenciales válidas.
+  3. Si usas Azure DevOps por HTTPS, verifica PAT con scope **Code (Read)** como mínimo.
+  4. Verifica que la URL sea exacta (`https://dev.azure.com/<org>/<project>/_git/<repo>`).
+  5. Revisa detalle con `kubectl describe application workshop-app -n argocd`.
 - **Error: Application no sincroniza**: revisa URL del repo GitOps y path `k8s-argo` en `kubectl describe application workshop-app -n argocd`.
 - **Error: no detecta cambios**: confirma que hiciste commit/push en el repo GitOps (no en este repo).
 

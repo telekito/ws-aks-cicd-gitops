@@ -86,5 +86,3 @@ Entender cuándo usar Azure DevOps y cuándo usar GitOps con Argo CD.
 - **CI/CD** para build, test y publicar imagen → ACR.
 - **GitOps** para gestionar despliegues declarativamente → Kubernetes manifests en Git.
 
-## Resultado esperado
-El participante entiende las ventajas y limitaciones de cada modelo y puede decidir qué enfoque encaja mejor según contexto, equipo y necesidades.
