@@ -22,6 +22,36 @@ Gestionar el despliegue con un modelo declarativo basado en Git como fuente de v
 - Acceso a un repositorio Git dedicado para GitOps (separado de este repo)
 - Ese repo GitOps debe contener la carpeta `k8s-argo/` en la raíz
 
+### Archivos a copiar al repo GitOps (obligatorio)
+
+Debes copiar **solo** estos archivos desde este repo hacia el repo GitOps dedicado:
+
+- `workshop-app/k8s-argo/namespace.yaml`
+- `workshop-app/k8s-argo/configmap.yaml`
+- `workshop-app/k8s-argo/deployment.yaml`
+- `workshop-app/k8s-argo/service.yaml`
+- `workshop-app/k8s-argo/ingress.yaml` (opcional si no usas ingress controller)
+
+El repo GitOps debe quedar así:
+
+```text
+<repo-gitops>/
+└── k8s-argo/
+   ├── namespace.yaml
+   ├── configmap.yaml
+   ├── deployment.yaml
+   ├── service.yaml
+   └── ingress.yaml
+```
+
+Después de copiar:
+
+1. Haz `git add .`
+2. Haz `git commit -m "Add Argo manifests"`
+3. Haz `git push`
+
+**Importante:** los cambios de GitOps deben hacerse siempre en ese repo dedicado, no en este repo del workshop.
+
 ### Pasos
 
 1. **Instalar Argo CD**
