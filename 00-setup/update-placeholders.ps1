@@ -22,12 +22,20 @@ $config = Get-Content $ConfigFile | ConvertFrom-Json
 Write-Host "Configuración cargada desde: $ConfigFile"
 Write-Host ""
 
+# Solicitar datos de Azure DevOps
+$azureDevOpsServiceConnection = Read-Host "Ingresa el nombre de la Service Connection de Azure DevOps (<AZURE_DEVOPS_SERVICE_CONNECTION>)"
+if ([string]::IsNullOrWhiteSpace($azureDevOpsServiceConnection)) {
+  Write-Host "❌ Debes ingresar un nombre válido de Service Connection" -ForegroundColor Red
+  exit 1
+}
+
 # Mostrar valores
 Write-Host "Valores detectados:"
 Write-Host "  Grupo de recursos: $($config.resourceGroup)"
 Write-Host "  Clúster AKS: $($config.aksClusterName)"
 Write-Host "  ACR: $($config.acrName)"
 Write-Host "  Ubicación: $($config.location)"
+Write-Host "  Azure DevOps Service Connection: $azureDevOpsServiceConnection"
 Write-Host ""
 
 # Mapeo de placeholders
@@ -35,6 +43,7 @@ $placeholders = @{
   '<AKS_RESOURCE_GROUP>' = $config.resourceGroup
   '<AKS_CLUSTER_NAME>' = $config.aksClusterName
   '<ACR_NAME>' = $config.acrName
+  '<AZURE_DEVOPS_SERVICE_CONNECTION>' = $azureDevOpsServiceConnection
 }
 
 Write-Host "Placeholders a reemplazar:"
@@ -45,6 +54,7 @@ Write-Host ""
 
 # Archivos a procesar
 $filesToProcess = @(
+  '..\README.md'
   '..\01-kubernetes-essentials\README.md'
   '..\02-azure-devops-cicd\README.md'
   '..\02-azure-devops-cicd\azure-pipelines.yml'
