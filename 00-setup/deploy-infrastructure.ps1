@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 
 # Script para desplegar la infraestructura completa de AKS en Azure
 

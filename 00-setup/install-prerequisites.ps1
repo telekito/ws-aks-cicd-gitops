@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 
 # Instalación automática de prerequisitos con winget
 

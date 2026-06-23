@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 
 # Script para eliminar todos los recursos de Azure creados por el workshop
 
@@ -73,7 +72,7 @@ Write-Host ""
 
 # Verificar que el grupo existe
 Write-Host "Verificando grupo de recursos..."
-$rgExists = az group exists --name $resourceGroup 2>/dev/null | ConvertFrom-Json
+$rgExists = az group exists --name $resourceGroup 2>$null | ConvertFrom-Json
 
 if (-not $rgExists) {
   Write-Host "[ERROR] El grupo de recursos '$resourceGroup' no existe o ya fue eliminado"
@@ -142,7 +141,7 @@ try {
     $interval = 10
     
     while ($elapsed -lt $maxWait) {
-      $rgExists = az group exists --name $resourceGroup 2>/dev/null | ConvertFrom-Json
+      $rgExists = az group exists --name $resourceGroup 2>$null | ConvertFrom-Json
       
       if (-not $rgExists) {
         Write-Host ""

@@ -9,5 +9,5 @@ if (-not $PodName) {
 
 Write-Host "Inspecting pod $PodName in namespace $Namespace"
 kubectl describe pod $PodName -n $Namespace
-Write-Host "\nLogs:"
+Write-Host "`nLogs:"
 kubectl logs $PodName -n $Namespace

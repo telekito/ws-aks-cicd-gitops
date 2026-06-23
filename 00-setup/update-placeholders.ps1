@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 
 # Script para automatizar el reemplazo de placeholders después del despliegue
 
