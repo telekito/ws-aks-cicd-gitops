@@ -27,13 +27,12 @@ Antes de comenzar, asegurate de que tienes:
 
 Cada bloque del workshop vive en su propia carpeta para separar contenido, ejercicios y recursos.
 
-1. [Kubernetes essentials](01-kubernetes-essentials/README.md) — 25-30 min
-2. [AKS: base de trabajo](02-aks-base/README.md) — 35-40 min
-3. [Despliegue con Azure DevOps](03-azure-devops-cicd/README.md) — 45 min
-4. [Despliegue con GitOps y Argo CD](04-gitops-argocd/README.md) — 50 min
-5. [Operación de AKS](05-operacion-aks/README.md) — 40-45 min
-6. [Comparativa: CI/CD vs GitOps](06-comparativa/README.md) — 15 min
-7. [Buenas prácticas y cierre](07-buenas-practicas-cierre/README.md) — 15-20 min
+1. [Kubernetes & AKS Essentials](01-kubernetes-essentials/README.md) — 60-75 min
+2. [Despliegue con Azure DevOps](02-azure-devops-cicd/README.md) — 45 min
+3. [Despliegue con GitOps y Argo CD](03-gitops-argocd/README.md) — 50 min
+4. [Operación de AKS](04-operacion-aks/README.md) — 40-45 min
+5. [Comparativa: CI/CD vs GitOps](05-comparativa/README.md) — 15 min
+6. [Buenas prácticas y cierre](06-buenas-practicas-cierre/README.md) — 15-20 min
 
 ## Configuración de valores iniciales
 
@@ -49,17 +48,17 @@ Antes de ejecutar cualquier módulo, debes definir tus valores de Azure. Reempla
 ## Flujo del workshop
 
 ```
-Módulo 1 & 2: Entender AKS y kubectl (conexión)
-           ↓
-Módulo 3: Desplegar con CI/CD (push model)
-           ↓
-Módulo 4: Desplegar con GitOps (pull model)
-           ↓
-Módulo 5: Operar, escalar, diagnosticar
-           ↓
-Módulo 6: Comparar modelos y decidir
-           ↓
-Módulo 7: Limpieza y siguientes pasos
+Módulo 1: Kubernetes & AKS Essentials (conexión + conceptos)
+            ↓
+Módulo 2: Desplegar con CI/CD (push model)
+            ↓
+Módulo 3: Desplegar con GitOps (pull model)
+            ↓
+Módulo 4: Operar, escalar, diagnosticar
+            ↓
+Módulo 5: Comparar modelos y decidir
+            ↓
+Módulo 6: Buenas prácticas y cierre
 ```
 
 ## Guía de uso

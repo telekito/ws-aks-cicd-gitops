@@ -1,4 +1,4 @@
-# 03. Despliegue con Azure DevOps
+# 02. Despliegue con Azure DevOps
 
 ## Objetivo
 Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
@@ -18,6 +18,7 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 
 ## Scripts y archivos
 - `azure-pipelines.yml`: pipeline de CI/CD.
+- `scripts/build-and-push-image.ps1`: construye y sube la imagen a ACR.
 - `scripts/build-image.ps1`: build local para practicar.
 - `scripts/deploy-to-aks.ps1`: despliegue manual equivalente al pipeline.
 - `..\workshop-app`: aplicación de ejemplo común.
@@ -32,7 +33,8 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
 ## Laboratorio paso a paso
 
 ### Prerequisitos
-- Tener módulos 1 y 2 completados (kubectl conectado a AKS)
+- Tener el módulo 1 (Kubernetes & AKS Essentials) completado
+- kubectl conectado a AKS y namespace aks-workshop creado
 - Tener un ACR creado y credenciales disponibles
 - Tener acceso a un Azure DevOps Project
 - El código estar en un repositorio con el `azure-pipelines.yml` en la raíz
@@ -58,20 +60,33 @@ Desplegar una aplicación mediante un flujo CI/CD orientado a pipeline.
    ```
    **Validación esperada**: imagen built sin errores.
 
-4. **Ejecutar el despliegue manual equivalente al pipeline**
+4. **Construir y subir la imagen a ACR**
+   ```powershell
+   # Con tag 'latest' (default)
+   .\scripts\build-and-push-image.ps1
+   
+   # O con tag personalizado
+   .\scripts\build-and-push-image.ps1 -ImageTag "v1.0"
+   
+   # Solo build local sin push
+   .\scripts\build-and-push-image.ps1 -SkipPush
+   ```
+   **Validación esperada**: imagen buildada y subida a ACR sin errores.
+
+5. **Ejecutar el despliegue manual equivalente al pipeline**
    ```powershell
    .\scripts\deploy-to-aks.ps1 -Namespace aks-workshop -ImageTag latest -AcrName <ACR_NAME>
    ```
    **Validación esperada**: deployment completado, pods en estado Running.
 
-5. **Verificar el despliegue**
+6. **Verificar el despliegue**
    ```powershell
    kubectl get all -n aks-workshop
    kubectl logs $(kubectl get pods -n aks-workshop -o jsonpath='{.items[0].metadata.name}') -n aks-workshop
    ```
    **Validación esperada**: 2 pods running, logs mostrando app escuchando en puerto 3000.
 
-6. **Test de conectividad**
+7. **Test de conectividad**
    ```powershell
    kubectl port-forward svc/workshop-app 8080:80 -n aks-workshop
    # En otra terminal

@@ -24,45 +24,50 @@
 
 ## Durante el workshop
 
-### Módulo 1 (25-30 min)
-- [ ] Explicar conceptos Kubernetes base
-- [ ] Ejecutar `kubectl-basics.ps1` juntos
-- [ ] Particip ejecuta `inspect-workload.ps1` en su máquina
-- [ ] **Checkpoint**: todos ven 2 pods running
-
-### Módulo 2 (35-40 min)
-- [ ] Explicar qué aporta AKS
+### Módulo 1: Kubernetes & AKS Essentials (60-75 min)
+**Fase 1: Conexión a AKS**
+- [ ] Explicar qué aporta AKS vs Kubernetes autogestionado
 - [ ] Particip corre `connect-aks.ps1` con sus valores
-- [ ] Particip corre `aks-overview.ps1`
 - [ ] **Checkpoint**: todos logueados en el mismo clúster
 
-### Módulo 3 (45 min)
+**Fase 2: Exploración del Clúster**
+- [ ] Explicar conceptos Kubernetes base (Pods, Deployments, Services)
+- [ ] Particip corre `aks-overview.ps1`
+- [ ] Ejecutar `kubectl-basics.ps1` juntos (referencia rápida)
+
+**Fase 3-5: Despliegue y Diagnóstico**
+- [ ] Particip despliega con `deploy-app.ps1`
+- [ ] Particip ejecuta `inspect-workload.ps1` en su máquina
+- [ ] Particip accede a app via IP pública (LoadBalancer)
+- [ ] **Checkpoint**: todos ven 2 pods running con IP pública accesible
+
+### Módulo 2 (45 min)
 - [ ] Explicar pipeline CI/CD
 - [ ] Revisar `azure-pipelines.yml` línea por línea
-- [ ] Opcional: ejecutar `build-image.ps1` localmente
+- [ ] Ejecutar `build-and-push-image.ps1` para push a ACR
 - [ ] Ejecutar `deploy-to-aks.ps1` para despliegue manual
 - [ ] **Checkpoint**: app desplegada y accesible
 
-### Módulo 4 (50 min)
+### Módulo 3 (50 min)
 - [ ] Explicar GitOps y Argo CD
 - [ ] Particip corre `install-argocd.ps1`
 - [ ] Acceso a UI de Argo CD (port-forward)
 - [ ] Aplicar `application.yaml`
 - [ ] **Checkpoint**: App sincronizada en Argo CD
 
-### Módulo 5 (40-45 min)
+### Módulo 4 (40-45 min)
 - [ ] Explicar operación y escalado
 - [ ] Particip corre `scale-deployment.ps1` a 4 replicas
 - [ ] Particip corre `show-telemetry.ps1`
 - [ ] Demo: Argo auto-heal (borrar un pod)
 - [ ] **Checkpoint**: auto-healing verificado
 
-### Módulo 6 (15 min)
+### Módulo 5 (15 min)
 - [ ] Comparativa tabla en README
 - [ ] Resumen: cuándo usar cada modelo
 - [ ] Preguntas abiertas del grupo
 
-### Módulo 7 (15-20 min)
+### Módulo 6 (15-20 min)
 - [ ] Recomendaciones finales
 - [ ] Checklist de seguridad
 - [ ] Recursos para continuar aprendiendo
@@ -91,13 +96,12 @@
 
 ## Tiempos reales (estimados)
 
-- Módulo 1: 30 min (con deployment)
-- Módulo 2: 40 min (si hay retrasos en conexión)
-- Módulo 3: 50 min (build + deploy)
-- Módulo 4: 60 min (instalación de Argo + UI)
-- Módulo 5: 35 min (demos rápidas)
-- Módulo 6: 10 min (comparativa)
-- Módulo 7: 15 min (cierre)
+- Módulo 1 (Kubernetes & AKS): 70 min
+- Módulo 2 (CI/CD): 50 min (build + deploy)
+- Módulo 3 (GitOps): 60 min (instalación de Argo + UI)
+- Módulo 4 (Operación): 35 min (demos rápidas)
+- Módulo 5 (Comparativa): 10 min
+- Módulo 6 (Cierre): 15 min
 
 **Total**: 240 min aprox. (puede variar ±30 min)
 

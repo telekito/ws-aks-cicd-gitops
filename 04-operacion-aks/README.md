@@ -1,4 +1,4 @@
-# 05. Operación de AKS
+# 04. Operación de AKS
 
 ## Objetivo
 Aprender a operar y diagnosticar una aplicación ya desplegada en AKS.

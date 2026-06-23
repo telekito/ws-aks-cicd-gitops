@@ -1,4 +1,4 @@
-# 07. Buenas Prácticas y Cierre
+# 06. Buenas Prácticas y Cierre
 
 ## Objetivo
 Cerrar el workshop con recomendaciones prácticas para llevar el patrón a entornos reales.

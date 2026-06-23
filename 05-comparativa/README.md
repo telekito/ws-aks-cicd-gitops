@@ -1,4 +1,4 @@
-# 06. Comparativa: CI/CD vs GitOps
+# 05. Comparativa: CI/CD vs GitOps
 
 ## Objetivo
 Entender cuándo usar Azure DevOps y cuándo usar GitOps con Argo CD.

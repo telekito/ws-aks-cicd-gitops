@@ -1,4 +1,4 @@
-# 04. Despliegue con GitOps y Argo CD
+# 03. Despliegue con GitOps y Argo CD
 
 ## Objetivo
 Gestionar el despliegue con un modelo declarativo basado en Git como fuente de verdad.
