@@ -222,6 +222,36 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
 }
 else {
   Write-Host "✅ Docker disponible"
+
+  # Asignar permisos ACR al usuario actual (antes del login/push)
+  Write-Host ""
+  Write-Host "Configurando permisos del ACR..."
+  $currentUser = az account show --output json 2>$null | ConvertFrom-Json
+  if ($LASTEXITCODE -eq 0 -and $currentUser.user.name) {
+    $userId = az ad user show --id $currentUser.user.name --output json 2>$null | ConvertFrom-Json
+    if ($LASTEXITCODE -eq 0 -and $userId.id) {
+      foreach ($role in @('AcrPull', 'AcrPush')) {
+        Write-Host "Asignando rol $role a $($currentUser.user.name)..."
+        az role assignment create `
+          --assignee $userId.id `
+          --role $role `
+          --scope "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ContainerRegistry/registries/$AcrName" `
+          --output none 2>$null
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "✅ Permiso $role asignado"
+        }
+        else {
+          Write-Host "⚠️  Permiso $role ya asignado o no se pudo asignar" -ForegroundColor Yellow
+        }
+      }
+    }
+    else {
+      Write-Host "⚠️  No se pudo resolver el usuario en Azure AD para asignar permisos ACR" -ForegroundColor Yellow
+    }
+  }
+  else {
+    Write-Host "⚠️  No se pudo obtener el usuario autenticado para asignar permisos ACR" -ForegroundColor Yellow
+  }
   
   # Obtener credenciales ACR
   Write-Host ""
@@ -274,27 +304,6 @@ else {
     }
   }
   
-  # Asignar permisos acrpull al usuario actual
-  Write-Host ""
-  Write-Host "Configurando permisos del ACR..."
-  $currentUser = az account show --output json 2>$null | ConvertFrom-Json
-  if ($LASTEXITCODE -eq 0 -and $currentUser.user.name) {
-    $userId = az ad user show --id $currentUser.user.name --output json 2>$null | ConvertFrom-Json
-    if ($LASTEXITCODE -eq 0 -and $userId.id) {
-      Write-Host "Asignando rol AcrPull a $($currentUser.user.name)..."
-      az role assignment create `
-        --assignee $userId.id `
-        --role AcrPull `
-        --scope "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ContainerRegistry/registries/$AcrName" `
-        --output none 2>$null
-      if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Permisos AcrPull asignados"
-      }
-      else {
-        Write-Host "⚠️  Permisos AcrPull ya asignados o error" -ForegroundColor Yellow
-      }
-    }
-  }
 }
 Write-Host ""
 Write-Host "================================================"
