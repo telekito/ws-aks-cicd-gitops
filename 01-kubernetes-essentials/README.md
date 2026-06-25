@@ -159,19 +159,81 @@ Comprender los conceptos base de Kubernetes, conectarse a Azure Kubernetes Servi
 
 ## Conceptos clave
 
-### Kubernetes
-- **Pod**: Unidad más pequeña, envuelve uno o más contenedores
-- **Deployment**: Define cuántas replicas del pod deben estar corriendo
-- **Service**: Expone pods con balanceo de carga (ClusterIP, NodePort, LoadBalancer)
-- **Namespace**: Aislamiento lógico de recursos
-- **ConfigMap**: Datos de configuración (no secretos)
-- **Secret**: Datos sensibles (contraseñas, tokens)
+### Objetos Principales de Kubernetes
 
-### AKS
-- **Control Plane**: Gestionado por Azure (no tienes nodos dedicados a esto)
-- **Node Pools**: Grupos de nodos con la misma configuración
-- **RBAC**: Control de acceso basado en roles (integrado con Entra ID de Azure)
-- **Escalado**: Automático con Kubernetes Autoscaler o manual
+#### Workloads (Cargas de Trabajo)
+- **Pod**: La unidad más pequeña en Kubernetes. Es un wrapper alrededor de uno o más contenedores (típicamente uno). Los pods comparten recursos de red y almacenamiento. No se crean directamente; se gestionan a través de Deployments.
+  
+- **Deployment**: Objeto de nivel superior que define y gestiona réplicas de pods. Proporciona actualizaciones sin interrución (rolling updates), reversiones y escalado. Es el recurso más común para aplicaciones stateless.
+
+- **StatefulSet**: Similar a Deployment pero para aplicaciones stateful (como bases de datos). Garantiza identidades de red estables y almacenamiento persistente para cada pod.
+
+- **DaemonSet**: Asegura que una copia de un pod se ejecute en cada nodo del clúster. Útil para tareas de monitoreo, logging y recolección de métricas.
+
+- **Job**: Ejecuta una tarea hasta su finalización. Útil para procesos batch o trabajos puntuales.
+
+#### Exposición de Servicios
+- **Service**: Abstracción que expone pods con balanceo de carga y descubrimiento de servicios. Tipos:
+  - **ClusterIP** (default): Expone el servicio solo dentro del clúster
+  - **NodePort**: Expone el servicio en cada nodo en un puerto específico
+  - **LoadBalancer**: Asigna una IP pública externa (en AKS, crea un Load Balancer de Azure)
+
+- **Ingress**: Gestiona acceso HTTP/HTTPS externo a múltiples servicios. Proporciona enrutamiento por hostname y path.
+
+#### Gestión de Configuración
+- **ConfigMap**: Almacena datos de configuración en pares clave-valor. Se inyecta en pods como variables de entorno o archivos.
+
+- **Secret**: Similar a ConfigMap pero para datos sensibles (contraseñas, tokens, certificados). Codificados en base64 (cifrado en etcd cuando está habilitado).
+
+#### Organización
+- **Namespace**: Aislamiento lógico de recursos dentro de un clúster. Permite multi-tenancy y control de acceso granular. Namespaces principales:
+  - `default`: namespace por defecto
+  - `kube-system`: componentes del sistema de Kubernetes
+  - `kube-public`: recursos públicos
+
+#### Escalado Automático
+- **HPA (Horizontal Pod Autoscaler)**: Escala automáticamente el número de réplicas de un Deployment basado en métricas (CPU, memoria, métricas personalizadas). Rango configurable de mínimo/máximo de pods.
+  ```yaml
+  apiVersion: autoscaling/v2
+  kind: HorizontalPodAutoscaler
+  metadata:
+    name: workshop-app-hpa
+  spec:
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: workshop-app
+    minReplicas: 2
+    maxReplicas: 10
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  ```
+
+- **VPA (Vertical Pod Autoscaler)**: Ajusta automáticamente solicitudes de recursos (CPU/memoria) de los contenedores basándose en uso real.
+
+### Azure Kubernetes Service (AKS)
+
+- **Control Plane**: Componentes maestros de Kubernetes (API Server, etcd, scheduler) gestionados completamente por Azure. No incurres en costos de nodos para estos.
+
+- **Node Pools**: Grupos de nodos con la misma configuración (tamaño VM, SO, etiquetas). Un clúster puede tener múltiples node pools para diferentes tipos de workloads (pools de computación intensiva, GPU, etc.).
+
+- **RBAC (Role-Based Access Control)**: Control de acceso granular integrado con Azure Entra ID. Permite:
+  - Roles predefinidos: `view`, `edit`, `admin`
+  - Roles personalizados
+  - Vinculación con identidades de Azure
+
+- **Escalado**: Dos niveles:
+  - **Escalado horizontal** (HPA): Aumenta/disminuye el número de pods
+  - **Escalado de nodos** (Cluster Autoscaler): Aumenta/disminuye el número de nodos VM en el clúster
+
+- **ACR (Azure Container Registry)**: Registro privado de imágenes Docker. AKS puede autenticarse automáticamente para descargar imágenes.
+
+- **Managed Identity**: Identidades gestionadas por Azure para que AKS acceda a otros recursos Azure (ACR, Key Vault, Storage) sin credenciales explícitas.
 
 ## Resultado esperado
 Al finalizar este módulo:
